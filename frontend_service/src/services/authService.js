@@ -55,14 +55,14 @@ export const authService = {
     }
   },
 
-  getProfile: async () => {
+  getDashboard: async () => {
     try {
-      const response = await api.get('/profile');
+      const response = await api.get('/dashboard');
       return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.detail || 'Failed to fetch profile'
+        error: error.response?.data?.detail || 'Failed to fetch dashboard'
       };
     }
   }

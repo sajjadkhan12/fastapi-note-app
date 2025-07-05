@@ -16,7 +16,7 @@ const LoginPage = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/profile');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
@@ -41,15 +41,15 @@ const LoginPage = () => {
       const { access_token } = result.data;
       
       // Get user profile after successful login
-      const profileResult = await authService.getProfile();
+      const profileResult = await authService.getDashboard();
       
       if (profileResult.success) {
         login(access_token, profileResult.data);
-        navigate('/profile');
+        navigate('/dashboard');
       } else {
         // If profile fetch fails, still log in but without user data
         login(access_token, null);
-        navigate('/profile');
+        navigate('/dashboard');
       }
     } else {
       setError(result.error);

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './utils/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
-import ProfilePage from './pages/ProfilePage';
+import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -15,10 +15,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route 
-            path="/profile" 
+            path="/dashboard" 
             element={
               <ProtectedRoute>
-                <ProfilePage />
+                <Dashboard />
               </ProtectedRoute>
             } 
           />

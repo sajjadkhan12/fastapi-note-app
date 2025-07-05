@@ -49,8 +49,8 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 from .utils import get_current_user
 from fastapi import Depends
 
-@router.get("/profile")
-def read_profile(current_user: User = Depends(get_current_user)):
+@router.get("/dashboard")
+def get_dashboard(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
         "first_name": current_user.first_name,
