@@ -679,6 +679,228 @@ code {
   font-size: 16px;
 }
 
+/* Image Upload Component Styles */
+.image-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-upload-large .image-upload-area {
+  width: 100%;
+  height: 160px;
+}
+
+.image-upload-small .image-upload-area {
+  width: 100%;
+  height: 120px;
+}
+
+.image-upload-area {
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.image-upload-area:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.image-upload-area.drag-active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea10, #764ba210);
+}
+
+.image-upload-area.has-image {
+  border: none;
+  background: none;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 10px;
+}
+
+.image-preview:hover .image-overlay {
+  opacity: 1;
+}
+
+.change-text {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-text p {
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 4px;
+  font-size: 16px;
+}
+
+.upload-text span {
+  font-size: 14px;
+  color: #718096;
+}
+
+.remove-image-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background: #c53030;
+}
+
+/* Avatar Image in Sidebar */
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Edit Profile Button */
+.edit-profile-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 4px;
+  transition: color 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+  color: #764ba2;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #718096;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.modal-content form {
+  padding: 0 24px 24px 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.modal-actions .btn-primary,
+.modal-actions .btn-secondary {
+  width: auto;
+  margin: 0;
+  padding: 10px 20px;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .card, .profile-card {

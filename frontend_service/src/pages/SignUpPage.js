@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import ImageUpload from '../components/ImageUpload';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -10,11 +11,19 @@ const SignUpPage = () => {
     email: '',
     phone: '',
     password: '',
-    confirm_password: ''
+    confirm_password: '',
+    profile_image: null
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const handleImageChange = (imageData) => {
+    setFormData(prev => ({
+      ...prev,
+      profile_image: imageData
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,6 +78,15 @@ const SignUpPage = () => {
         {success && <div className="success-message">{success}</div>}
 
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Profile Picture (Optional)</label>
+            <ImageUpload
+              currentImage={formData.profile_image}
+              onImageChange={handleImageChange}
+              size="small"
+            />
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="first_name">First Name</label>

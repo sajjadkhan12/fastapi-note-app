@@ -65,6 +65,18 @@ export const authService = {
         error: error.response?.data?.detail || 'Failed to fetch dashboard'
       };
     }
+  },
+
+  updateProfile: async (userData) => {
+    try {
+      const response = await api.put('/profile', userData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Failed to update profile'
+      };
+    }
   }
 };
 

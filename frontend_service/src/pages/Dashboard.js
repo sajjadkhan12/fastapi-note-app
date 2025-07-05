@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import { authService } from '../services/authService';
+import ImageUpload from '../components/ImageUpload';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -9,6 +10,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    profile_image: null
+  });
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -27,6 +35,18 @@ const Dashboard = () => {
 
     fetchDashboard();
   }, [user, setUser]);
+
+  // Initialize edit form when user data is available
+  useEffect(() => {
+    if (user) {
+      setEditFormData({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone: user.phone || '',
+        profile_image: user.profile_image || null
+      });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -70,6 +90,54 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const handleEditProfile = () => {
+    setShowProfileEdit(true);
+  };
+
+  const handleCancelEdit = () => {
+    setShowProfileEdit(false);
+    // Reset form data
+    if (user) {
+      setEditFormData({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone: user.phone || '',
+        profile_image: user.profile_image || null
+      });
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const result = await authService.updateProfile(editFormData);
+    
+    if (result.success) {
+      setUser(result.data);
+      setShowProfileEdit(false);
+    } else {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleImageChange = (imageData) => {
+    setEditFormData(prev => ({
+      ...prev,
+      profile_image: imageData
+    }));
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -208,11 +276,21 @@ const Dashboard = () => {
         {/* User Profile */}
         <div className="user-profile">
           <div className="user-avatar">
-            {user && getInitials(user.first_name, user.last_name)}
+            {user?.profile_image ? (
+              <img src={user.profile_image} alt="Profile" className="avatar-image" />
+            ) : (
+              user && getInitials(user.first_name, user.last_name)
+            )}
           </div>
           <div className="user-info">
             <div className="user-name">{user?.first_name} {user?.last_name}</div>
             <div className="user-email">{user?.email}</div>
+            <button 
+              className="edit-profile-btn"
+              onClick={handleEditProfile}
+            >
+              ✏️ Edit Profile
+            </button>
           </div>
         </div>
 
@@ -243,6 +321,92 @@ const Dashboard = () => {
       <div className="main-content">
         {renderContent()}
       </div>
+
+      {/* Profile Edit Modal */}
+      {showProfileEdit && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Edit Profile</h2>
+              <button className="modal-close" onClick={handleCancelEdit}>×</button>
+            </div>
+            
+            {error && <div className="error-message">{error}</div>}
+            
+            <form onSubmit={handleUpdateProfile}>
+              <div className="form-group">
+                <label className="form-label">Profile Picture</label>
+                <ImageUpload
+                  currentImage={editFormData.profile_image}
+                  onImageChange={handleImageChange}
+                  size="small"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit_first_name">First Name</label>
+                  <input
+                    type="text"
+                    id="edit_first_name"
+                    name="first_name"
+                    className="form-input"
+                    value={editFormData.first_name}
+                    onChange={handleEditChange}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit_last_name">Last Name</label>
+                  <input
+                    type="text"
+                    id="edit_last_name"
+                    name="last_name"
+                    className="form-input"
+                    value={editFormData.last_name}
+                    onChange={handleEditChange}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="edit_phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="edit_phone"
+                  name="phone"
+                  className="form-input"
+                  value={editFormData.phone}
+                  onChange={handleEditChange}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleCancelEdit}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? <span className="loading"></span> : 'Update Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

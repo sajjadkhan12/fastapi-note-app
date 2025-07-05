@@ -10,3 +10,4 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     phone = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
+    profile_image = Column(String, nullable=True)  # Store image URL or base64
