@@ -1,0 +1,21 @@
+{
+  "short_name": "Notes App",
+  "name": "Notes App - Personal Note Taking",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "logo192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "description": "A beautiful and modern note-taking application with user authentication"
+}
