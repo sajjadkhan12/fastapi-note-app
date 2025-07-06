@@ -2,11 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .database import engine
-from .auth import router as auth_router
+from .routes import router
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Notes App Auth Service", version="1.0.0")
+app = FastAPI(title="Notes App Notes Service", version="1.0.0")
 
 # Configure CORS
 app.add_middleware(
@@ -17,13 +17,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
-
+app.include_router(router, prefix="/api/v1", tags=["notes"])
 
 @app.get("/")
 def read_root():
-    return {"message": "Auth Service API", "version": "1.0.0"}
-
+    return {"message": "Notes Service API", "version": "1.0.0"}
 
 @app.get("/health")
 def health_check():
