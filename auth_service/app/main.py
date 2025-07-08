@@ -11,7 +11,7 @@ app = FastAPI(title="Notes App Auth Service", version="1.0.0")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Frontend URL
+    allow_origins=["http://localhost", "http://localhost:80", "http://localhost:3000", "http://localhost:3001"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

@@ -220,8 +220,8 @@ def delete_note(
         raise HTTPException(status_code=404, detail="Note not found")
 
 # Note actions
-@router.post("/notes/{note_id}/favorite", response_model=schemas.NoteResponse)
-def toggle_favorite(
+@router.patch("/notes/{note_id}/favorite", response_model=schemas.NoteResponse, summary="Toggle note favorite status")
+def toggle_note_favorite(
     note_id: int,
     current_user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
@@ -233,7 +233,7 @@ def toggle_favorite(
     return _transform_note_for_response(note)
 
 # Dashboard
-@router.get("/dashboard", response_model=schemas.DashboardStats)
+@router.get("/dashboard", response_model=schemas.DashboardStats, summary="Get user dashboard statistics")
 def get_dashboard_stats(
     current_user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
