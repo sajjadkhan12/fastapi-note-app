@@ -102,6 +102,9 @@ frontend_service/dist/
 *.rar
 
 # Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
 
 # Python Testing & Coverage
 .pytest_cache/

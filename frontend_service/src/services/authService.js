@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_AUTH_SERVICE_URL || '/api/auth';
+const API_BASE_URL = 'http://localhost:8002';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -33,7 +33,7 @@ api.interceptors.response.use(
 export const authService = {
   signup: async (userData) => {
     try {
-      const response = await api.post('/auth/register', userData);
+      const response = await api.post('/signup', userData);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -45,7 +45,7 @@ export const authService = {
 
   login: async (credentials) => {
     try {
-      const response = await api.post('/auth/login', credentials);
+      const response = await api.post('/login', credentials);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -57,19 +57,19 @@ export const authService = {
 
   getDashboard: async () => {
     try {
-      const response = await api.get('/auth/me');
+      const response = await api.get('/dashboard');
       return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.detail || 'Failed to fetch user profile'
+        error: error.response?.data?.detail || 'Failed to fetch dashboard'
       };
     }
   },
 
   updateProfile: async (userData) => {
     try {
-      const response = await api.put('/auth/me', userData);
+      const response = await api.put('/profile', userData);
       return { success: true, data: response.data };
     } catch (error) {
       return {

@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api/notes/api/v1';
+const API_BASE_URL = 'http://localhost:8003/api/v1';
 
 class NotesService {
   constructor() {

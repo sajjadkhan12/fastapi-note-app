@@ -5,7 +5,7 @@ from .schemas import UserCreate, UserLogin, UserUpdate
 from .models import User
 from .utils import hash_password, verify_password, create_access_token
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter()
 
 def get_db():
     db = SessionLocal()
@@ -14,8 +14,8 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/register", summary="Register a new user")
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+@router.post("/signup")
+def signup(user: UserCreate, db: Session = Depends(get_db)):
     if user.password != user.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match.")
 
@@ -38,8 +38,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return {"msg": "User created successfully."}
 
-@router.post("/login", summary="Authenticate user and get access token")
-def login_user(user: UserLogin, db: Session = Depends(get_db)):
+@router.post("/login")
+def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials.")
@@ -50,8 +50,8 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 from .utils import get_current_user
 from fastapi import Depends
 
-@router.get("/me", summary="Get current user profile")
-def get_current_user_profile(current_user: User = Depends(get_current_user)):
+@router.get("/dashboard")
+def get_dashboard(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
         "first_name": current_user.first_name,
@@ -61,8 +61,8 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
         "profile_image": current_user.profile_image,
     }
 
-@router.put("/me", summary="Update current user profile")
-def update_current_user_profile(user_update: UserUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.put("/profile")
+def update_profile(user_update: UserUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # Update user fields if provided
     if user_update.first_name is not None:
         current_user.first_name = user_update.first_name
