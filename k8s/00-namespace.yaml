@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: notes-app
+  labels:
+    name: notes-app
+    monitoring: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: notes-app-sa
+  namespace: notes-app
+automountServiceAccountToken: false

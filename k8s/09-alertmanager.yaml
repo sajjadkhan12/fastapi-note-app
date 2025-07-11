@@ -1,0 +1,237 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: notes-app
+  labels:
+    app: alertmanager
+    component: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'localhost:587'
+      smtp_from: 'alerts@notes.local'
+    
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'web.hook'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'critical-alerts'
+      - match:
+          severity: warning
+        receiver: 'warning-alerts'
+    
+    receivers:
+    - name: 'web.hook'
+      webhook_configs:
+      - url: 'http://localhost:5001/'
+    
+    - name: 'critical-alerts'
+      # Configure your critical alert destinations here
+      # email_configs:
+      # - to: 'admin@company.com'
+      #   subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+      #   body: |
+      #     {{ range .Alerts }}
+      #     Alert: {{ .Annotations.summary }}
+      #     Description: {{ .Annotations.description }}
+      #     {{ end }}
+      webhook_configs:
+      - url: 'http://localhost:5001/critical'
+        send_resolved: true
+    
+    - name: 'warning-alerts'
+      # Configure your warning alert destinations here
+      webhook_configs:
+      - url: 'http://localhost:5001/warning'
+        send_resolved: true
+
+  rules.yml: |
+    groups:
+    - name: notes-app-alerts
+      rules:
+      
+      # High CPU usage alert
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{namespace="notes-app"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has high CPU usage: {{ $value }}"
+      
+      # High memory usage alert
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{namespace="notes-app"} / container_spec_memory_limit_bytes{namespace="notes-app"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has high memory usage: {{ $value | humanizePercentage }}"
+      
+      # Pod down alert
+      - alert: PodDown
+        expr: up{namespace="notes-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod is down"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been down for more than 1 minute"
+      
+      # High HTTP error rate
+      - alert: HighHTTPErrorRate
+        expr: rate(http_requests_total{namespace="notes-app",status_code=~"5.."}[5m]) / rate(http_requests_total{namespace="notes-app"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP error rate"
+          description: "Service {{ $labels.service }} has a high error rate: {{ $value | humanizePercentage }}"
+      
+      # Database connection issues
+      - alert: DatabaseConnectionHigh
+        expr: postgres_stat_database_numbackends{namespace="notes-app"} > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection count"
+          description: "PostgreSQL has {{ $value }} active connections"
+      
+      # Database down
+      - alert: DatabaseDown
+        expr: postgres_up{namespace="notes-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database is down"
+          description: "PostgreSQL database is not responding"
+      
+      # Disk space low (for PVC)
+      - alert: DiskSpaceLow
+        expr: (1 - (kubelet_volume_stats_available_bytes{namespace="notes-app"} / kubelet_volume_stats_capacity_bytes{namespace="notes-app"})) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space low"
+          description: "Persistent volume {{ $labels.persistentvolumeclaim }} has less than 20% free space"
+      
+      # HPA at max replicas
+      - alert: HPAMaxReplicas
+        expr: kube_horizontalpodautoscaler_status_current_replicas{namespace="notes-app"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace="notes-app"}
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HPA at maximum replicas"
+          description: "HPA {{ $labels.horizontalpodautoscaler }} has been at maximum replicas for 10 minutes"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: notes-app
+  labels:
+    app: alertmanager
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9093"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: notes-app-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.26.0
+        ports:
+        - containerPort: 9093
+          name: web
+        args:
+        - '--config.file=/etc/alertmanager/alertmanager.yml'
+        - '--storage.path=/alertmanager'
+        - '--web.external-url=https://notes.local/alertmanager/'
+        - '--web.route-prefix=/'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alertmanager
+        - name: storage
+          mountPath: /alertmanager
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config
+        configMap:
+          name: alertmanager-config
+      - name: storage
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-service
+  namespace: notes-app
+  labels:
+    app: alertmanager
+    component: monitoring
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9093"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: alertmanager
+  ports:
+  - name: web
+    port: 9093
+    targetPort: 9093
+    protocol: TCP
+  type: ClusterIP
