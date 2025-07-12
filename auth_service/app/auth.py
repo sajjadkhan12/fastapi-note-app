@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database import SessionLocal
 from .schemas import UserCreate, UserLogin, UserUpdate
 from .models import User
 from .utils import hash_password, verify_password, create_access_token
-
+from .utils import get_current_user
+from fastapi import Depends
 router = APIRouter()
 
 def get_db():
@@ -46,9 +47,6 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
     token = create_access_token(data={"sub": str(db_user.id)})
     return {"access_token": token, "token_type": "bearer"}
-
-from .utils import get_current_user
-from fastapi import Depends
 
 @router.get("/dashboard")
 def get_dashboard(current_user: User = Depends(get_current_user)):
